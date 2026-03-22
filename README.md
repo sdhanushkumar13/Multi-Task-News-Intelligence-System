@@ -1,8 +1,8 @@
-📰 Multi-Task News Intelligence System
+## 📰 Multi-Task News Intelligence System
 
 An end-to-end NLP system that performs Text Classification, Named Entity Recognition (NER), and Text Summarization on news articles using both from-scratch models and pretrained transformers, deployed on the cloud.
 
-🚀 Project Overview
+# 🚀 Project Overview
 
 This project builds a unified NLP pipeline capable of:
 
