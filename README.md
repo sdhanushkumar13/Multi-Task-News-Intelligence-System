@@ -1,8 +1,8 @@
-## 📰 Multi-Task News Intelligence System
+# 📰 Multi-Task News Intelligence System
 
 An end-to-end NLP system that performs Text Classification, Named Entity Recognition (NER), and Text Summarization on news articles using both from-scratch models and pretrained transformers, deployed on the cloud.
 
-# 🚀 Project Overview
+## 🚀 Project Overview
 
 This project builds a unified NLP pipeline capable of:
 
@@ -12,7 +12,7 @@ This project builds a unified NLP pipeline capable of:
 
 ✂️ Summarization – Generating concise summaries of long news articles
 
-The system compares:
+### The system compares:
 
 Traditional Machine Learning models
 
@@ -20,7 +20,7 @@ Custom Deep Learning models
 
 Pretrained Transformer models (BERT, DistilBERT, T5, BART)
 
-🧰 Tech Stack
+## 🧰 Tech Stack
 
 Languages & Libraries: Python, Scikit-learn, PyTorch, TensorFlow, Hugging Face Transformers
 
@@ -34,77 +34,77 @@ Database: PostgreSQL
 
 Tools: Git, SQLAlchemy
 
-📂 Dataset
+## 📂 Dataset
 
 Microsoft PENS (Personalized News Headlines Dataset)
 
-⚙️ Features
+## ⚙️ Features
 
 1. Text Classification
 
-ML Models: Logistic Regression, SVM
+    ML Models: Logistic Regression, SVM
 
-DL Models: CNN, LSTM, BiLSTM
+    DL Models: CNN, LSTM, BiLSTM
 
-Transformers: BERT, DistilBERT
+    Transformers: BERT, DistilBERT
 
 2. Named Entity Recognition (NER)
 
-Rule-based baseline
+    Rule-based baseline
 
-BiLSTM / BiLSTM-CRF
+    BiLSTM / BiLSTM-CRF
 
-Transformer-based NER
+    Transformer-based NER
 
 3. Summarization
 
-Extractive (TF-IDF, TextRank)
+    Extractive (TF-IDF, TextRank)
 
-Seq2Seq (LSTM with attention)
+    Seq2Seq (LSTM with attention)
 
-Transformers (T5, BART)
+    Transformers (T5, BART)
 
-🔍 Workflow
+## 🔍 Workflow
 
 1. Data Preprocessing
 
-Text cleaning (remove HTML, URLs, special chars)
+    Text cleaning (remove HTML, URLs, special chars)
 
-Tokenization & stopword removal
+    Tokenization & stopword removal
 
-Feature engineering (BoW, TF-IDF, embeddings)
+    Feature engineering (BoW, TF-IDF, embeddings)
 
 2. Model Building
 
-ML, DL, and Transformer models for each task
+    ML, DL, and Transformer models for each task
 
 3. Evaluation
 
-Classification: Accuracy, Precision, Recall, F1
+    Classification: Accuracy, Precision, Recall, F1
 
-NER: F1-score (per entity type)
+    NER: F1-score (per entity type)
 
-Summarization: ROUGE metrics
+    Summarization: ROUGE metrics
 
 4. Application Development
 
-Input: Text or file upload
+    Input: Text or file upload
 
-Task selection: Classification / NER / Summarization
+    Task selection: Classification / NER / Summarization
 
-Model selection: ML / DL / Transformer
+    Model selection: ML / DL / Transformer
 
-Output: Predictions, entities, summaries
+    Output: Predictions, entities, summaries
 
 5. Deployment
 
-EC2 for hosting
+    EC2 for hosting
 
-S3 for model storage
+    S3 for model storage
 
-RDS for logging user activity
+    RDS for logging user activity
 
-🌐 Deployment Architecture
+## 🌐 Deployment Architecture
 
 EC2 → Hosts the application
 
@@ -112,7 +112,7 @@ S3 → Stores trained models & artifacts
 
 RDS → Stores logs and user interactions
 
-📊 Evaluation Metrics
+## 📊 Evaluation Metrics
 
 Classification: Accuracy, Precision, Recall, F1-score
 
@@ -124,7 +124,7 @@ Source Code (Streamlit App)
 
 Deployment Scripts (AWS / Hugging Face)
 
-🧪 Results
+## 🧪 Results
 
 Fully functional multi-task NLP web app
 
