@@ -78,7 +78,7 @@ s3 = boto3.client(
 
 BUCKET_NAME = "nlp-multitask-models-dk23"
 
-LOCAL_MODEL_DIR = "/tmp/models"
+LOCAL_MODEL_DIR = "/home/ec2-user/models"
 
 def download_all_models():
     if os.path.exists(LOCAL_MODEL_DIR) and os.listdir(LOCAL_MODEL_DIR):
@@ -107,7 +107,7 @@ def download_all_models():
 
     print("✅ All models downloaded from S3")
 
-BASE_DIR = "/tmp/models"
+BASE_DIR = LOCAL_MODEL_DIR
 
 @st.cache_resource
 def setup_models():
