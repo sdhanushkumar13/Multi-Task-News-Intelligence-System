@@ -111,6 +111,8 @@ def download_all_models():
 
 BASE_DIR = LOCAL_MODEL_DIR
 
+print(" BASE_DIR =", BASE_DIR)
+
 @st.cache_resource
 def setup_models():
     download_all_models()
