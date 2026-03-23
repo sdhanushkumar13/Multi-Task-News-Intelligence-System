@@ -25,9 +25,9 @@ from tensorflow.keras.models import Model
 import psycopg2
 import boto3
 
-os.environ["TMPDIR"] = "/home/ec2-user/tmp"
-os.environ["TEMP"] = "/home/ec2-user/tmp"
-os.environ["TMP"] = "/home/ec2-user/tmp"
+os.environ["TMPDIR"] = "/home/ec2-user/models"
+os.environ["TEMP"] = "/home/ec2-user/models"
+os.environ["TMP"] = "/home/ec2-user/models"
 
 #--------------------------------
 # RDS SETUP
