@@ -85,9 +85,7 @@ BUCKET_NAME = "nlp-multitask-models-dk23"
 LOCAL_MODEL_DIR = "/home/ec2-user/models"
 
 def download_all_models():
-    if os.path.exists(LOCAL_MODEL_DIR) and os.listdir(LOCAL_MODEL_DIR):
-        return
-
+    
     os.makedirs(LOCAL_MODEL_DIR, exist_ok=True)
 
     paginator = s3.get_paginator("list_objects_v2")
