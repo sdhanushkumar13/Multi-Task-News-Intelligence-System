@@ -202,6 +202,7 @@ try:
 except:
     nltk.download('stopwords')
     STOPWORDS = set(stopwords.words('english'))
+    nltk.download('punkt_tab')
 
 NER_MAX_LEN = 60
 
