@@ -25,23 +25,25 @@ from tensorflow.keras.models import Model
 import psycopg2
 import boto3
 import threading
-#AutoModelForSequenceClassification
+
 
 os.environ["TMPDIR"] = "/home/ec2-user/tmp"
 os.environ["TEMP"] = "/home/ec2-user/tmp"
 os.environ["TMP"] = "/home/ec2-user/tmp"
 
-#--------------------------------
+
+# --------------------------------
 # RDS SETUP
-#--------------------------------
+# --------------------------------
 DB_HOST = "nlp-db.cx6w4cqw67ox.ap-south-1.rds.amazonaws.com"
 DB_NAME = "nlp_logs"
 DB_USER = "postgres"
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 
 if DB_PASSWORD is None:
-    st.error(" DB_PASSWORD not set in environment")
+    st.error("DB_PASSWORD not set in environment")
     st.stop()
+
 
 def get_connection():
     return psycopg2.connect(
@@ -50,8 +52,29 @@ def get_connection():
         user=DB_USER,
         password=DB_PASSWORD,
         port=5432,
-        connect_timeout=3
+        connect_timeout=3,
+        sslmode="require"
     )
+
+
+def test_db_connection():
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+        cur.execute("SELECT 1;")
+        cur.fetchone()
+        cur.close()
+        conn.close()
+        st.success("DB connection OK")
+    except Exception as e:
+        st.error(f"DB connection failed: {e}")
+
+
+# Optional: put a small DB test in the sidebar
+with st.sidebar:
+    if st.button("Test DB connection"):
+        test_db_connection()
+
 
 def log_to_db(user_id, task, model_family, model_name, input_length, output, error):
     conn = None
@@ -77,6 +100,7 @@ def log_to_db(user_id, task, model_family, model_name, input_length, output, err
         if conn:
             conn.close()
 
+
 def log_to_db_async(*args, **kwargs):
     threading.Thread(
         target=log_to_db,
@@ -84,7 +108,9 @@ def log_to_db_async(*args, **kwargs):
         kwargs=kwargs,
         daemon=True
     ).start()
-#--------------------------------
+
+
+# --------------------------------
 # S3 Setup
 # -------------------------------
 s3 = boto3.client(
@@ -97,11 +123,10 @@ s3 = boto3.client(
 )
 
 BUCKET_NAME = "nlp-multitask-models-dk23"
-
 LOCAL_MODEL_DIR = "/home/ec2-user/models"
 
+
 def download_all_models():
-    
     os.makedirs(LOCAL_MODEL_DIR, exist_ok=True)
 
     paginator = s3.get_paginator("list_objects_v2")
@@ -124,21 +149,23 @@ def download_all_models():
                 continue
 
             os.makedirs(os.path.dirname(local_path), exist_ok=True)
-
             s3.download_file(BUCKET_NAME, key, local_path)
 
     print("✅ All models downloaded from S3")
 
-BASE_DIR = LOCAL_MODEL_DIR
 
-print(" BASE_DIR =", BASE_DIR)
+BASE_DIR = LOCAL_MODEL_DIR
+print("BASE_DIR =", BASE_DIR)
+
 
 @st.cache_resource
 def setup_models():
     download_all_models()
     return True
 
+
 setup_models()
+
 
 # -------------------------------
 # CLASSIFICATION
@@ -174,18 +201,19 @@ SUMM_CONFIG_PATH = os.path.join(BASE_DIR, "summarization", "dl", "config.json")
 
 SUMM_PT_PATH = os.path.join(BASE_DIR, "summarization", "pt", "BART-Large-CNN_model")
 
+
 required_files = [
     ML_MODEL_PATH,
     LABEL_ENCODER_PATH,
     DL_MODEL_PATH,
     TOKENIZER_PATH,
-    
+
     NER_MODEL_PATH,
     WORD2IDX_PATH,
     IDX2TAG_PATH,
-    
+
     NER_PT_META_PATH,
-    
+
     SUMM_ENCODER_PATH,
     SUMM_DECODER_PATH,
     SUMM_TOKENIZER_PATH,
@@ -210,6 +238,7 @@ for path in required_dirs:
         st.error(f"Missing model folder: {path}")
         st.stop()
 
+
 # -------------------------------
 # SETUP
 # -------------------------------
@@ -220,9 +249,9 @@ except:
     STOPWORDS = set(stopwords.words('english'))
 
 NER_MAX_LEN = 60
-
 MAX_LEN = 150
 PT_MAX_LEN = 96
+
 
 def clean_text(text):
     if not isinstance(text, str):
@@ -250,6 +279,7 @@ def clean_text(text):
 
     return text
 
+
 # -------------------------------
 # DEFINE NER DL MODEL CLASS
 # -------------------------------
@@ -264,16 +294,17 @@ class BiLSTM_CRF(nn.Module):
 
     def forward(self, input_ids):
         mask = (input_ids != 0)
-
         x = self.embedding(input_ids)
         x, _ = self.lstm(x)
         emissions = self.fc(x)
-
         return self.crf.decode(emissions, mask=mask)
 
+
 # -------------------------------
-# LOAD MODELS 
+# LOAD MODELS
 # -------------------------------
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 @st.cache_resource
 def load_ml():
@@ -281,40 +312,33 @@ def load_ml():
     le = joblib.load(LABEL_ENCODER_PATH)
     return model, le
 
+
 @st.cache_resource
 def load_dl():
     model = load_model(DL_MODEL_PATH)
-    
+
     with open(TOKENIZER_PATH, "rb") as f:
         tokenizer = pickle.load(f)
 
-    #tokenizer = pickle.load(open(TOKENIZER_PATH, "rb"))
     return model, tokenizer
+
 
 @st.cache_resource
 def load_pt_classifier():
-
     tokenizer = BertTokenizerFast.from_pretrained(PT_MODEL_PATH)
-
     model = BertForSequenceClassification.from_pretrained(PT_MODEL_PATH)
-
     model.to(device)
-
     model.eval()
-
     return tokenizer, model
+
 
 @st.cache_resource
 def load_ner_dl():
-
     with open(WORD2IDX_PATH, "rb") as f:
         word2idx = pickle.load(f)
 
     with open(IDX2TAG_PATH, "rb") as f:
         idx2tag = pickle.load(f)
-
-    #word2idx = pickle.load(open(WORD2IDX_PATH, "rb"))
-    #idx2tag = pickle.load(open(IDX2TAG_PATH, "rb"))
 
     model = BiLSTM_CRF(len(word2idx), len(idx2tag))
     model.load_state_dict(torch.load(NER_MODEL_PATH, map_location="cpu"))
@@ -322,27 +346,23 @@ def load_ner_dl():
 
     return model, word2idx, idx2tag
 
+
 @st.cache_resource
 def load_ner_pt():
-
     tokenizer = BertTokenizerFast.from_pretrained(NER_PT_MODEL_PATH)
     model = BertForTokenClassification.from_pretrained(NER_PT_MODEL_PATH)
 
-    # load id2tag
     with open(NER_PT_META_PATH, "rb") as f:
-            id2tag = pickle.load(f)
-
-    #id2tag = pickle.load(open(NER_PT_META_PATH, "rb"))
+        id2tag = pickle.load(f)
 
     model.to(device)
-
     model.eval()
 
     return tokenizer, model, id2tag
 
+
 @st.cache_resource
 def load_summarizer():
-
     encoder_model = tf.keras.models.load_model(
         SUMM_ENCODER_PATH,
         compile=False
@@ -356,52 +376,41 @@ def load_summarizer():
     with open(SUMM_TOKENIZER_PATH, "rb") as f:
         tokenizer = pickle.load(f)
 
-    #tokenizer = pickle.load(open(SUMM_TOKENIZER_PATH, "rb"))
-
     with open(SUMM_CONFIG_PATH) as f:
         config = json.load(f)
 
     return encoder_model, decoder_model, tokenizer, config
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 @st.cache_resource
 def load_transformer_summarizer():
-
     tokenizer = AutoTokenizer.from_pretrained(SUMM_PT_PATH)
-
     model = AutoModelForSeq2SeqLM.from_pretrained(SUMM_PT_PATH)
     model.to(device)
     model.eval()
-
     return tokenizer, model
+
 
 # -------------------------------
 # NER DL HELPER FUNCTION
 # -------------------------------
 def ner_predict(text):
-
     tokens = text.strip().split()
 
-    # Convert to indices
     seq = [word2idx.get(w, word2idx.get("<UNK>", 1)) for w in tokens]
-
-    # Pad
     seq = seq[:NER_MAX_LEN] + [0] * (NER_MAX_LEN - len(seq))
 
     input_tensor = torch.tensor([seq], dtype=torch.long)
-
     preds = ner_model(input_tensor)[0]
 
     tags = [idx2tag[p] for p in preds[:len(tokens)]]
-
     return tokens, tags
+
 
 # -------------------------------
 # NER PT PREDICTION FUNCTION
 # -------------------------------
 def ner_pt_predict(text):
-
     inputs = pt_ner_tokenizer(
         text,
         return_tensors="pt",
@@ -417,16 +426,15 @@ def ner_pt_predict(text):
     preds = torch.argmax(logits, dim=2)[0].cpu().numpy()
 
     tokens = pt_ner_tokenizer.convert_ids_to_tokens(inputs["input_ids"][0])
-
     tags = [pt_id2tag[p] for p in preds]
 
     return tokens, tags
 
+
 # ---------------------------------
-# SUMMARIZATION EXT.BASELINE.FUNC 
+# SUMMARIZATION EXT.BASELINE.FUNC
 # ---------------------------------
 def textrank_summarize(text, top_n=3):
-
     cleaned = clean_text(text)
     sentences = sent_tokenize(cleaned)
 
@@ -435,7 +443,6 @@ def textrank_summarize(text, top_n=3):
 
     vectorizer = TfidfVectorizer()
     vectors = vectorizer.fit_transform(sentences).toarray()
-
     sim_matrix = cosine_similarity(vectors)
 
     nx_graph = nx.from_numpy_array(sim_matrix)
@@ -447,20 +454,17 @@ def textrank_summarize(text, top_n=3):
     )
 
     summary = " ".join([s for _, s in ranked[:top_n]])
-
     return summary
+
 
 # -------------------------------
 # SUMMARIZATION DL FUNCTION
 # -------------------------------
 def generate_summary(text):
-
     MAX_ART_LEN = summ_config["MAX_ART_LEN"]
     MAX_SUM_LEN = summ_config["MAX_SUM_LEN"]
 
     cleaned = clean_text(text)
-
-    # Encode input
     seq = summ_tokenizer.texts_to_sequences([cleaned])
     seq = pad_sequences(seq, maxlen=MAX_ART_LEN, padding="post")
 
@@ -473,7 +477,6 @@ def generate_summary(text):
     decoded = []
 
     for _ in range(MAX_SUM_LEN):
-
         output, h, c = decoder_model.predict(
             [target_seq, encoder_out, h, c],
             verbose=0
@@ -484,19 +487,16 @@ def generate_summary(text):
 
         if word == "<eos>" or word == "":
             break
-
         decoded.append(word)
-
         target_seq = np.array([[idx]])
 
     return " ".join(decoded)
 
+
 # -------------------------------
 # SUMMARIZATION PT FUNCTION
 # -------------------------------
-
 def generate_transformer_summary(text):
-
     inputs = pt_tokenizer(
         text,
         return_tensors="pt",
@@ -521,6 +521,7 @@ def generate_transformer_summary(text):
 
     return summary
 
+
 # -------------------------------
 # UI
 # -------------------------------
@@ -533,8 +534,11 @@ st.caption(f"Characters: {len(input_text)}")
 col1, col2 = st.columns(2)
 
 with col1:
-    task = st.selectbox("Task", ["Classification", "NER", "Summarization"],
-                        key="task_select")
+    task = st.selectbox(
+        "Task",
+        ["Classification", "NER", "Summarization"],
+        key="task_select"
+    )
 
 with col2:
     if task == "Classification":
@@ -558,11 +562,12 @@ with col2:
 
 st.markdown("---")
 result_container = st.container()
+
+
 # -------------------------------
 # RUN
 # -------------------------------
 if st.button("🚀 Run Analysis"):
-
     with result_container:
         st.empty()
 
@@ -579,24 +584,20 @@ if st.button("🚀 Run Analysis"):
             # =====================
             if task == "Classification" and model_choice == "ML Model":
                 ml_model, label_encoder = load_ml()
-
                 pred = ml_model.predict([cleaned])[0]
                 label = label_encoder.inverse_transform([pred])[0]
 
                 st.success("ML Prediction ✅")
-                st.write(f" 🧠 Category: {label}")
+                st.write(f"🧠 Category: {label}")
 
-                # Confidence (only if available)
                 try:
                     clf = ml_model.named_steps.get("clf")
-
                     if hasattr(clf, "predict_proba"):
                         probs = ml_model.predict_proba([cleaned])[0]
                         confidence = probs[pred]
                         st.write(f"Confidence: {confidence:.2%}")
                     else:
                         st.info("Confidence not available for this model")
-
                 except:
                     st.info("Confidence not available")
 
@@ -610,26 +611,22 @@ if st.button("🚀 Run Analysis"):
                     error=False
                 )
                 result_generated = True
-                #st.stop()
 
             # =====================
             # CLASSIFICATION DL MODEL
             # =====================
             elif task == "Classification" and model_choice == "DL Model":
-
                 dl_model, tokenizer_dl = load_dl()
                 _, label_encoder = load_ml()
 
                 seq = tokenizer_dl.texts_to_sequences([cleaned])
                 padded = pad_sequences(seq, maxlen=MAX_LEN, padding="post")
-
                 probs = dl_model.predict(padded)[0]
                 pred = np.argmax(probs)
-
                 label = label_encoder.inverse_transform([pred])[0]
 
                 st.success("DL Prediction ✅")
-                st.write(f" 🧠 Category: {label}")
+                st.write(f"🧠 Category: {label}")
                 st.write(f"Confidence: {probs[pred]:.2%}")
 
                 log_to_db_async(
