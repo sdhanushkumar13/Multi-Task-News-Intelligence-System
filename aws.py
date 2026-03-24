@@ -1,3 +1,4 @@
+import psycopg2
 import streamlit as st
 import joblib
 import pickle
@@ -22,7 +23,6 @@ from transformers import BertTokenizerFast, BertForSequenceClassification, BertF
 import tensorflow as tf
 from tensorflow.keras.layers import Input, Embedding, LSTM, Dense, AdditiveAttention, Concatenate
 from tensorflow.keras.models import Model
-import psycopg2
 import boto3
 #AutoModelForSequenceClassification
 
@@ -53,7 +53,7 @@ def log_to_db(user_id, task, model_family, model_name, input_length, output, err
         connect_timeout=10)
         print("Connected")   
         cur = conn.cursor()
-        print(f" user:{user_id}, task:{task_type}, modelfam:{model_family}, modelname:{model_name}, inputlength:{input_length}, out:{output}, errorflag:{error_flag} ")
+        print(f" user:{user_id}, task:{task}, modelfam:{model_family}, modelname:{model_name}, inputlength:{input_length}, out:{output}, errorflag:{error_flag} ")
 
         cur.execute("""
             INSERT INTO inference_logs (
