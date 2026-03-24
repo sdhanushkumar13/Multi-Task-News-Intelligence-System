@@ -41,7 +41,8 @@ DB_PASSWORD = os.getenv("DB_PASSWORD")
 if DB_PASSWORD is None:
     st.error(" DB_PASSWORD not set in environment")
     st.stop()
-        
+
+@st.cache_resource        
 def log_to_db(user_id, task, model_family, model_name, input_length, output, error):
     print("Entered")
     try:
