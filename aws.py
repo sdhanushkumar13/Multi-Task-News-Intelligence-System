@@ -520,43 +520,44 @@ st.caption(f"Characters: {len(input_text)}")
 col1, col2 = st.columns(2)
 
 with col1:
-    task = st.selectbox(
-        "Task",
-        ["Classification", "NER", "Summarization"],
-        key="task_select"
-    )
+    task = st.selectbox("Task", ["Classification", "NER", "Summarization"],
+                        key="task_select")
 
 with col2:
     if task == "Classification":
-        options = ["ML Model", "DL Model", "Pretrained Model"]
+        model_choice = st.selectbox(
+            "Model",
+            ["ML Model", "DL Model", "Pretrained Model"],
+            key="model_classification"
+        )
     elif task == "NER":
-        options = ["DL Model", "Pretrained Model"]
-    else:
-        options = ["Extractive Baseline", "DL Model", "Pretrained Transformer Model"]
-
-    model_choice = st.selectbox(
-        "Model",
-        options,
-        key=f"model_{task}" 
-    )
+        model_choice = st.selectbox(
+            "Model",
+            ["DL Model", "Pretrained Model"],
+            key="model_ner"
+        )
+    elif task == "Summarization":
+        model_choice = st.selectbox(
+            "Model",
+            ["Extractive Baseline", "DL Model", "Pretrained Transformer Model"],
+            key="model_summarization"
+        )
 
 st.markdown("---")
-
-if "result_html" not in st.session_state:
-    st.session_state.result_html = None
-if "result_task" not in st.session_state:
-    st.session_state.result_task = None
-
+result_container = st.container()
+# -------------------------------
+# RUN
+# -------------------------------
 if st.button("🚀 Run Analysis"):
 
-
-    st.session_state.result_html = None
-    st.session_state.result_task = None
+    with result_container:
+        st.empty()
 
     if not input_text.strip():
         st.warning("⚠️ Please enter text.")
     else:
         cleaned = clean_text(input_text)
+        result_generated = False
 
         with st.spinner("Processing... ⏳"):
 
@@ -565,144 +566,302 @@ if st.button("🚀 Run Analysis"):
             # =====================
             if task == "Classification" and model_choice == "ML Model":
                 ml_model, label_encoder = load_ml()
+
                 pred = ml_model.predict([cleaned])[0]
                 label = label_encoder.inverse_transform([pred])[0]
 
+                st.success("ML Prediction ✅")
+                st.write(f" 🧠 Category: {label}")
+
+                # Confidence (only if available)
                 try:
                     clf = ml_model.named_steps.get("clf")
+
                     if hasattr(clf, "predict_proba"):
                         probs = ml_model.predict_proba([cleaned])[0]
                         confidence = probs[pred]
-                        st.session_state.result_html = f"**ML Prediction ✅**\n\n🧠 Category: {label}\n\nConfidence: {confidence:.2%}"
+                        st.write(f"Confidence: {confidence:.2%}")
                     else:
-                        st.session_state.result_html = f"**ML Prediction ✅**\n\n🧠 Category: {label}\n\nConfidence: Not available"
-                except:
-                    st.session_state.result_html = f"**ML Prediction ✅**\n\n🧠 Category: {label}"
+                        st.info("Confidence not available for this model")
 
-                log_to_db("user1", "Classification", "ML", "logreg_tfidf", len(input_text), label, False)
+                except:
+                    st.info("Confidence not available")
+
+                log_to_db(
+                    user_id="user1",
+                    task="Classification",
+                    model_family="ML",
+                    model_name="logreg_tfidf",
+                    input_length=len(input_text),
+                    output=label,
+                    error=False
+                )
+                result_generated = True
 
             # =====================
             # CLASSIFICATION DL MODEL
             # =====================
             elif task == "Classification" and model_choice == "DL Model":
+
                 dl_model, tokenizer_dl = load_dl()
                 _, label_encoder = load_ml()
 
                 seq = tokenizer_dl.texts_to_sequences([cleaned])
                 padded = pad_sequences(seq, maxlen=MAX_LEN, padding="post")
+
                 probs = dl_model.predict(padded)[0]
                 pred = np.argmax(probs)
+
                 label = label_encoder.inverse_transform([pred])[0]
 
-                st.session_state.result_html = f"**DL Prediction ✅**\n\n🧠 Category: {label}\n\nConfidence: {probs[pred]:.2%}"
-                log_to_db("user1", "Classification", "DL", "bilstm_glove", len(input_text), label, False)
+                st.success("DL Prediction ✅")
+                st.write(f" 🧠 Category: {label}")
+                st.write(f"Confidence: {probs[pred]:.2%}")
+
+                log_to_db(
+                    user_id="user1",
+                    task="Classification",
+                    model_family="DL",
+                    model_name="bilstm_glove",
+                    input_length=len(input_text),
+                    output=label,
+                    error=False
+                )
+                result_generated = True
 
             # =====================
-            # CLASSIFICATION TRANSFORMER
+            # CLASSIFICATION TRANSFORMER MODEL
             # =====================
+
             elif task == "Classification" and model_choice == "Pretrained Model":
+
                 pt_clf_tokenizer, pt_clf_model = load_pt_classifier()
 
-                inputs = pt_clf_tokenizer(cleaned, return_tensors="pt", truncation=True, padding=True, max_length=PT_MAX_LEN)
+                inputs = pt_clf_tokenizer(
+                    cleaned,
+                    return_tensors="pt",
+                    truncation=True,
+                    padding=True,
+                    max_length=PT_MAX_LEN
+                )
+
                 with torch.no_grad():
                     inputs = {k: v.to(device) for k, v in inputs.items()}
                     outputs = pt_clf_model(**inputs)
 
-                probs = torch.softmax(outputs.logits, dim=1).cpu().numpy()[0]
+                logits = outputs.logits
+                probs = torch.softmax(logits, dim=1).cpu().numpy()[0]
+
                 pred = int(np.argmax(probs))
+
                 label = pt_clf_model.config.id2label[pred]
 
-                st.session_state.result_html = f"**Transformer Prediction ✅**\n\n🧠 Category: {label}\n\nConfidence: {probs[pred]:.2%}"
-                log_to_db("user1", "Classification", "Transformer", "bert_classifier", len(input_text), label, False)
+                st.success("Transformer Prediction ✅")
+                st.write(f"🧠 Category: {label}")
+                st.write(f"Confidence: {probs[pred]:.2%}")
+
+                log_to_db(
+                    user_id="user1",
+                    task="Classification",
+                    model_family="Transformer",
+                    model_name="bert_classifier",
+                    input_length=len(input_text),
+                    output=label,
+                    error=False
+                )
+                result_generated = True
 
             # =====================
-            # NER DL
+            # NER - DL MODEL
             # =====================
             elif task == "NER" and model_choice == "DL Model":
+
                 ner_model, word2idx, idx2tag = load_ner_dl()
+
                 tokens, tags = ner_predict(input_text)
 
+                st.success("NER Completed ✅")
+
+                st.subheader("📌 Extracted Entities")
+
                 entities = []
-                current_entity, current_tag = [], None
+                current_entity = []
+                current_tag = None
+
                 for token, tag in zip(tokens, tags):
+
                     if tag.startswith("B-"):
                         if current_entity:
                             entities.append((" ".join(current_entity), current_tag))
-                        current_entity, current_tag = [token], tag[2:]
+                        current_entity = [token]
+                        current_tag = tag[2:]
+
                     elif tag.startswith("I-") and current_entity:
                         current_entity.append(token)
+
                     else:
                         if current_entity:
                             entities.append((" ".join(current_entity), current_tag))
                             current_entity = []
+
                 if current_entity:
                     entities.append((" ".join(current_entity), current_tag))
 
-                entity_lines = "\n\n".join([f"**{e}** → {l}" for e, l in entities]) if entities else "No entities found."
-                st.session_state.result_html = f"**NER Completed ✅**\n\n### 📌 Extracted Entities\n\n{entity_lines}"
-                log_to_db("user1", "NER", "DL", "bilstm_crf", len(input_text), str(entities), False)
+                if entities:
+                    for ent, label in entities:
+                        st.write(f"**{ent}** → {label}")
+                else:
+                    st.write("No entities found.")
+
+                log_to_db(
+                    user_id="user1",
+                    task="NER",
+                    model_family="DL",
+                    model_name="bilstm_crf",
+                    input_length=len(input_text),
+                    output=str(entities),
+                    error=False
+                )
+                result_generated = True
 
             # =====================
-            # NER TRANSFORMER
+            # NER - TRANSFORMER MODEL
             # =====================
             elif task == "NER" and model_choice == "Pretrained Model":
                 pt_ner_tokenizer, pt_ner_model, pt_id2tag = load_ner_pt()
+
                 tokens, tags = ner_pt_predict(input_text)
 
+                st.success("NER Completed ✅")
+
+                st.subheader("📌 Extracted Entities")
+
                 entities = []
-                current_entity, current_tag = [], None
+                current_entity = []
+                current_tag = None
+
                 for token, tag in zip(tokens, tags):
+
+                    
                     if token in ["[CLS]", "[SEP]", "[PAD]"]:
                         continue
+
+                    
                     if token.startswith("##"):
                         if current_entity:
                             current_entity[-1] += token[2:]
                         continue
+
                     if tag.startswith("B-"):
                         if current_entity:
                             entities.append((" ".join(current_entity), current_tag))
-                        current_entity, current_tag = [token], tag[2:]
+                        current_entity = [token]
+                        current_tag = tag[2:]
+
                     elif tag.startswith("I-") and current_entity:
                         current_entity.append(token)
+
                     else:
                         if current_entity:
                             entities.append((" ".join(current_entity), current_tag))
-                            current_entity, current_tag = [], None
+                            current_entity = []
+                            current_tag = None
+
+                # Append last entity
                 if current_entity:
                     entities.append((" ".join(current_entity), current_tag))
 
-                entity_lines = "\n\n".join([f"**{e}** → {l}" for e, l in entities]) if entities else "No entities found."
-                st.session_state.result_html = f"**NER Completed ✅**\n\n### 📌 Extracted Entities\n\n{entity_lines}"
-                log_to_db("user1", "NER", "Transformer", "bert_ner", len(input_text), str(entities), False)
+
+                # Display
+                if entities:
+                    for ent, label in entities:
+                        st.write(f"**{ent}** → {label}")
+                else:
+                    st.write("No entities found.")
+
+                log_to_db(
+                    user_id="user1",
+                    task="NER",
+                    model_family="Transformer",
+                    model_name="bert_ner",
+                    input_length=len(input_text),
+                    output=str(entities),
+                    error=False
+                )
+                result_generated = True
 
             # =====================
-            # SUMMARIZATION EXTRACTIVE
+            # SUMMARIZATION - EXTRACTIVE
             # =====================
             elif task == "Summarization" and model_choice == "Extractive Baseline":
+
                 summary = textrank_summarize(input_text, top_n=3)
-                st.session_state.result_html = f"**Summarization Completed ✅**\n\n### 📝 Generated Summary\n\n{summary or 'No summary generated.'}"
-                log_to_db("user1", "Summarization", "ML", "textrank", len(input_text), summary, False)
+
+                st.success("Summarization Completed ✅")
+
+                st.subheader("📝 Generated Summary ")
+                st.write(summary if summary else "No summary generated.")  
+
+                log_to_db(
+                    user_id="user1",
+                    task="Summarization",
+                    model_family="ML",
+                    model_name="textrank",
+                    input_length=len(input_text),
+                    output=summary,
+                    error=False
+                )
+                result_generated = True
 
             # =====================
-            # SUMMARIZATION DL
+            # SUMMARIZATION - DL MODEL
             # =====================
             elif task == "Summarization" and model_choice == "DL Model":
                 encoder_model, decoder_model, summ_tokenizer, summ_config = load_summarizer()
+
                 summary = generate_summary(input_text)
-                summary = " ".join(summary.replace("<unk>", "").split())
-                st.session_state.result_html = f"**Summarization Completed ✅**\n\n### 📝 Generated Summary\n\n{summary or 'No summary generated.'}"
-                log_to_db("user1", "Summarization", "DL", "seq2seq", len(input_text), summary, False)
+
+                summary = summary.replace("<unk>", "").strip()
+                summary = " ".join(summary.split())
+
+                st.success("Summarization Completed ✅")
+
+                st.subheader("📝 Generated Summary")
+                st.write(summary if summary else "No summary generated.")
+
+                log_to_db(
+                    user_id="user1",
+                    task="Summarization",
+                    model_family="DL",
+                    model_name="seq2seq",
+                    input_length=len(input_text),
+                    output=summary,
+                    error=False
+                )
+                result_generated = True
 
             # =====================
-            # SUMMARIZATION TRANSFORMER
+            # SUMMARIZATION - TRANSFORMER
             # =====================
             elif task == "Summarization" and model_choice == "Pretrained Transformer Model":
                 pt_tokenizer, pt_model = load_transformer_summarizer()
+
                 summary = generate_transformer_summary(input_text)
-                st.session_state.result_html = f"**Summarization Completed ✅**\n\n### 📝 Generated Summary\n\n{summary or 'No summary generated.'}"
-                log_to_db("user1", "Summarization", "Transformer", "bart_large", len(input_text), summary, False)
 
+                st.success("Summarization Completed ✅")
 
-if st.session_state.result_html:
-    st.markdown("---")
-    st.markdown(st.session_state.result_html)
+                st.subheader("📝 Generated Summary ")
+                st.write(summary if summary else "No summary generated.")
+
+                log_to_db(
+                    user_id="user1",
+                    task="Summarization",
+                    model_family="Transformer",
+                    model_name="bart_large",
+                    input_length=len(input_text),
+                    output=summary,
+                    error=False
+                )
+                result_generated = True
+
+        st.rerun()
