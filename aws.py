@@ -585,15 +585,15 @@ if st.button("🚀 Run Analysis"):
                 except:
                     st.info("Confidence not available")
 
-                log_to_db(
-                    user_id="user1",
-                    task="Classification",
-                    model_family="ML",
-                    model_name="logreg_tfidf",
-                    input_length=len(input_text),
-                    output=label,
-                    error=False
-                )
+                #log_to_db(
+                #    user_id="user1",
+                #    task="Classification",
+                #    model_family="ML",
+                #    model_name="logreg_tfidf",
+                #    input_length=len(input_text),
+                #    output=label,
+                #    error=False
+                #)
                 result_generated = True
                 #st.stop()
 
@@ -617,15 +617,15 @@ if st.button("🚀 Run Analysis"):
                 st.write(f" 🧠 Category: {label}")
                 st.write(f"Confidence: {probs[pred]:.2%}")
 
-                log_to_db(
-                    user_id="user1",
-                    task="Classification",
-                    model_family="DL",
-                    model_name="bilstm_glove",
-                    input_length=len(input_text),
-                    output=label,
-                    error=False
-                )
+                #log_to_db(
+                #   user_id="user1",
+                #    task="Classification",
+                #    model_family="DL",
+                #    model_name="bilstm_glove",
+                #   input_length=len(input_text),
+                #    output=label,
+                #    error=False
+                #)
                 result_generated = True
                 #st.stop()
 
@@ -660,15 +660,15 @@ if st.button("🚀 Run Analysis"):
                 st.write(f"🧠 Category: {label}")
                 st.write(f"Confidence: {probs[pred]:.2%}")
 
-                log_to_db(
-                    user_id="user1",
-                    task="Classification",
-                    model_family="Transformer",
-                    model_name="bert_classifier",
-                    input_length=len(input_text),
-                    output=label,
-                    error=False
-                )
+                #log_to_db(
+                #    user_id="user1",
+                #   task="Classification",
+                #   model_family="Transformer",
+                #    model_name="bert_classifier",
+                #    input_length=len(input_text),
+                #    output=label,
+                #   error=False
+                #)
                 result_generated = True
                 #st.stop()
 
@@ -714,15 +714,15 @@ if st.button("🚀 Run Analysis"):
                 else:
                     st.write("No entities found.")
 
-                log_to_db(
-                    user_id="user1",
-                    task="NER",
-                    model_family="DL",
-                    model_name="bilstm_crf",
-                    input_length=len(input_text),
-                    output=str(entities),
-                    error=False
-                )
+                #log_to_db(
+                #    user_id="user1",
+                #    task="NER",
+                #    model_family="DL",
+                #    model_name="bilstm_crf",
+                #    input_length=len(input_text),
+                #    output=str(entities),
+                #    error=False
+                #)
                 result_generated = True
                 #st.stop()
 
@@ -781,15 +781,15 @@ if st.button("🚀 Run Analysis"):
                 else:
                     st.write("No entities found.")
 
-                log_to_db(
-                    user_id="user1",
-                    task="NER",
-                    model_family="Transformer",
-                    model_name="bert_ner",
-                    input_length=len(input_text),
-                    output=str(entities),
-                    error=False
-                )
+                #log_to_db(
+                #    user_id="user1",
+                #    task="NER",
+                #    model_family="Transformer",
+                #    model_name="bert_ner",
+                #    input_length=len(input_text),
+                #   output=str(entities),
+                #    error=False
+                #)
                 result_generated = True
                 #st.stop()
 
@@ -805,15 +805,15 @@ if st.button("🚀 Run Analysis"):
                 st.subheader("📝 Generated Summary ")
                 st.write(summary if summary else "No summary generated.")  
 
-                log_to_db(
-                    user_id="user1",
-                    task="Summarization",
-                    model_family="ML",
-                    model_name="textrank",
-                    input_length=len(input_text),
-                    output=summary,
-                    error=False
-                )
+                #log_to_db(
+                #    user_id="user1",
+                #    task="Summarization",
+                #    model_family="ML",
+                #    model_name="textrank",
+                #    input_length=len(input_text),
+                #    output=summary,
+                #    error=False
+                #)
                 result_generated = True
                 #st.stop()
 
@@ -833,15 +833,15 @@ if st.button("🚀 Run Analysis"):
                 st.subheader("📝 Generated Summary")
                 st.write(summary if summary else "No summary generated.")
 
-                log_to_db(
-                    user_id="user1",
-                    task="Summarization",
-                    model_family="DL",
-                    model_name="seq2seq",
-                    input_length=len(input_text),
-                    output=summary,
-                    error=False
-                )
+                #log_to_db(
+                #   user_id="user1",
+                #    task="Summarization",
+                #    model_family="DL",
+                #    model_name="seq2seq",
+                #    input_length=len(input_text),
+                #    output=summary,
+                #    error=False
+                #)
                 result_generated = True
                 #st.stop()
 
@@ -858,14 +858,14 @@ if st.button("🚀 Run Analysis"):
                 st.subheader("📝 Generated Summary ")
                 st.write(summary if summary else "No summary generated.")
 
-                log_to_db(
-                    user_id="user1",
-                    task="Summarization",
-                    model_family="Transformer",
-                    model_name="bart_large",
-                    input_length=len(input_text),
-                    output=summary,
-                    error=False
-                )
+                #log_to_db(
+                #    user_id="user1",
+                #    task="Summarization",
+                #    model_family="Transformer",
+                #    model_name="bart_large",
+                #    input_length=len(input_text),
+                #   output=summary,
+                #    error=False
+                #)
                 result_generated = True
         st.stop()
