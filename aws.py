@@ -549,6 +549,7 @@ if st.button("🚀 Run Analysis"):
         st.warning("⚠️ Please enter text.")
     else:
         cleaned = clean_text(input_text)
+        result_generated = False
 
         with st.spinner("Processing... ⏳"):
 
@@ -587,7 +588,7 @@ if st.button("🚀 Run Analysis"):
                     output=label,
                     error=False
                 )
-                st.stop()
+                result_generated = True
 
             # =====================
             # CLASSIFICATION DL MODEL
@@ -617,7 +618,7 @@ if st.button("🚀 Run Analysis"):
                     output=label,
                     error=False
                 )
-                st.stop()
+                result_generated = True
 
             # =====================
             # CLASSIFICATION TRANSFORMER MODEL
@@ -659,7 +660,7 @@ if st.button("🚀 Run Analysis"):
                     output=label,
                     error=False
                 )
-                st.stop()
+                result_generated = True
 
             # =====================
             # NER - DL MODEL
@@ -712,7 +713,7 @@ if st.button("🚀 Run Analysis"):
                     output=str(entities),
                     error=False
                 )
-                st.stop()
+                result_generated = True
 
             # =====================
             # NER - TRANSFORMER MODEL
@@ -778,7 +779,7 @@ if st.button("🚀 Run Analysis"):
                     output=str(entities),
                     error=False
                 )
-                st.stop()
+                result_generated = True
 
             # =====================
             # SUMMARIZATION - EXTRACTIVE
@@ -801,7 +802,7 @@ if st.button("🚀 Run Analysis"):
                     output=summary,
                     error=False
                 )
-                st.stop()
+                result_generated = True
 
             # =====================
             # SUMMARIZATION - DL MODEL
@@ -828,7 +829,7 @@ if st.button("🚀 Run Analysis"):
                     output=summary,
                     error=False
                 )
-                st.stop()
+                result_generated = True
 
             # =====================
             # SUMMARIZATION - TRANSFORMER
@@ -852,4 +853,6 @@ if st.button("🚀 Run Analysis"):
                     output=summary,
                     error=False
                 )
-                st.stop()
+                result_generated = True
+        if result_generated:
+            st.stop()
