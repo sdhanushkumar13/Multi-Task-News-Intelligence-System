@@ -41,22 +41,19 @@ DB_PASSWORD = os.getenv("DB_PASSWORD")
 if DB_PASSWORD is None:
     st.error(" DB_PASSWORD not set in environment")
     st.stop()
-
-def get_connection():
-    print(f"DB- Host={DB_HOST}, User={DB_USER}, Name={DB_NAME}, Password={DB_PASSWORD}")
-    return psycopg2.connect(
-        host=DB_HOST,
+        
+def log_to_db(user_id, task, model_family, model_name, input_length, output, error):
+    try:
+        conn = psycopg2.connect(host=DB_HOST,
         database=DB_NAME,
         user=DB_USER,
         password=DB_PASSWORD,
-        port=5432
-    )
-
-def log_to_db(user_id, task, model_family, model_name, input_length, output, error):
-    try:
-        conn = get_connection()
+        port=5432,
+        connection_timeout=10)
+        
         cur = conn.cursor()
-        print(cur)
+        print(f" user:{user_id}, task:{task_type}, modelfam:{model_family}, modelname:{model_name},
+        inputlength:{input_length}, out:{output}, errorflag:{error_flag} ")
 
         cur.execute("""
             INSERT INTO inference_logs (
