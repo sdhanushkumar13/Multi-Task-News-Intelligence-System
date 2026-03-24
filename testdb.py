@@ -8,7 +8,7 @@ import os
 DB_HOST = "nlp-db.cx6w4cqw67ox.ap-south-1.rds.amazonaws.com"
 DB_NAME = "nlp_logs"
 DB_USER = "postgres"
-DB_PASSWORD = "Dk23awsrds" # Replace with your real password string
+DB_PASSWORD = "xxxxxxxxxx" # Replace with your real password string
 DB_PORT = 5432
 
 st.set_page_config(page_title="DB Debugger", layout="centered")
