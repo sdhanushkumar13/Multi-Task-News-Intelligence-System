@@ -104,6 +104,10 @@ def download_all_models():
             )
             print(f"Downloading: {key}")
 
+            if os.path.exists(local_path):
+                print(f"Skipping (exists): {key}")
+                continue
+
             os.makedirs(os.path.dirname(local_path), exist_ok=True)
 
             s3.download_file(BUCKET_NAME, key, local_path)
@@ -524,7 +528,7 @@ with col2:
             "Model",
             ["ML Model", "DL Model", "Pretrained Model"]
         )
-    if task == "NER":
+    elif task == "NER":
         model_choice = st.selectbox(
             "Model",
             ["DL Model", "Pretrained Model"]
@@ -593,6 +597,7 @@ if st.button("🚀 Run Analysis"):
             elif task == "Classification" and model_choice == "DL Model":
 
                 dl_model, tokenizer_dl = load_dl()
+                _, label_encoder = load_ml()
 
                 seq = tokenizer_dl.texts_to_sequences([cleaned])
                 padded = pad_sequences(seq, maxlen=MAX_LEN, padding="post")
@@ -851,5 +856,3 @@ if st.button("🚀 Run Analysis"):
                     error=False
                 )
                 result_generated = True
-        if result_generated:
-            st.stop()
