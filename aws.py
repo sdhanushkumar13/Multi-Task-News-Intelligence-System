@@ -15,7 +15,7 @@ from nltk.tokenize import sent_tokenize
 from nltk.corpus import stopwords
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
+from transformers import AutoModelForSequenceClassification, AutoTokenizer, AutoModelForSeq2SeqLM
 import torch.nn as nn
 from torchcrf import CRF
 from transformers import BertTokenizerFast, BertForSequenceClassification, BertForTokenClassification
@@ -348,9 +348,6 @@ def load_summarizer():
         config = json.load(f)
 
     return encoder_model, decoder_model, tokenizer, config
-
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
-import torch
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
