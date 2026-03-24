@@ -41,8 +41,7 @@ DB_PASSWORD = os.getenv("DB_PASSWORD")
 if DB_PASSWORD is None:
     st.error(" DB_PASSWORD not set in environment")
     st.stop()
-
-@st.cache_resource        
+       
 def log_to_db(user_id, task, model_family, model_name, input_length, output, error):
     print("Entered")
     try:
@@ -50,8 +49,8 @@ def log_to_db(user_id, task, model_family, model_name, input_length, output, err
         database=DB_NAME,
         user=DB_USER,
         password=DB_PASSWORD,
-        port=5432)
-        #connection_timeout=10)
+        port=5432,
+        connection_timeout=10)
         print("Connected")   
         cur = conn.cursor()
         print(f" user:{user_id}, task:{task_type}, modelfam:{model_family}, modelname:{model_name}, inputlength:{input_length}, out:{output}, errorflag:{error_flag} ")
