@@ -17,7 +17,7 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 import torch.nn as nn
-from TorchCRF import CRF
+from torchcrf import CRF
 from transformers import BertTokenizerFast, BertForSequenceClassification, BertForTokenClassification
 import tensorflow as tf
 from tensorflow.keras.layers import Input, Embedding, LSTM, Dense, AdditiveAttention, Concatenate
