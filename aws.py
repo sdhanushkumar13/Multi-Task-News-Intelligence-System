@@ -195,16 +195,14 @@ for path in required_dirs:
         st.error(f"Missing model folder: {path}")
         st.stop()
 
-
-
 # -------------------------------
 # SETUP
 # -------------------------------
-#try:
- #   STOPWORDS = set(stopwords.words('english'))
-#except:
-nltk.download('stopwords')
-STOPWORDS = set(stopwords.words('english'))
+try:
+    STOPWORDS = set(stopwords.words('english'))
+except:
+    nltk.download('stopwords')
+    STOPWORDS = set(stopwords.words('english'))
 
 NER_MAX_LEN = 60
 
