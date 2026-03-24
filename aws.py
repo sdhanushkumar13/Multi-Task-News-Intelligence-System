@@ -365,15 +365,6 @@ def load_transformer_summarizer():
 
     return tokenizer, model
 
-ml_model, label_encoder = load_ml()
-dl_model, tokenizer_dl = load_dl()
-pt_clf_tokenizer, pt_clf_model = load_pt_classifier()
-ner_model, word2idx, idx2tag = load_ner_dl()
-pt_ner_tokenizer, pt_ner_model, pt_id2tag = load_ner_pt()
-encoder_model, decoder_model, summ_tokenizer, summ_config = load_summarizer()
-pt_tokenizer, pt_model = load_transformer_summarizer()
-
-
 # -------------------------------
 # NER DL HELPER FUNCTION
 # -------------------------------
@@ -568,6 +559,7 @@ if st.button("🚀 Run Analysis"):
             # CLASSIFICATION ML MODEL
             # =====================
             if task == "Classification" and model_choice == "ML Model":
+                ml_model, label_encoder = load_ml()
 
                 pred = ml_model.predict([cleaned])[0]
                 label = label_encoder.inverse_transform([pred])[0]
@@ -604,6 +596,8 @@ if st.button("🚀 Run Analysis"):
             # =====================
             elif task == "Classification" and model_choice == "DL Model":
 
+                dl_model, tokenizer_dl = load_dl()
+
                 seq = tokenizer_dl.texts_to_sequences([cleaned])
                 padded = pad_sequences(seq, maxlen=MAX_LEN, padding="post")
 
@@ -631,6 +625,8 @@ if st.button("🚀 Run Analysis"):
             # =====================
 
             elif task == "Classification" and model_choice == "Pretrained Model":
+
+                pt_clf_tokenizer, pt_clf_model = load_pt_classifier()
 
                 inputs = pt_clf_tokenizer(
                     cleaned,
@@ -669,6 +665,8 @@ if st.button("🚀 Run Analysis"):
             # NER - DL MODEL
             # =====================
             elif task == "NER" and model_choice == "DL Model":
+
+                ner_model, word2idx, idx2tag = load_ner_dl()
 
                 tokens, tags = ner_predict(input_text)
 
@@ -719,6 +717,7 @@ if st.button("🚀 Run Analysis"):
             # NER - TRANSFORMER MODEL
             # =====================
             elif task == "NER" and model_choice == "Pretrained Model":
+                pt_ner_tokenizer, pt_ner_model, pt_id2tag = load_ner_pt()
 
                 tokens, tags = ner_pt_predict(input_text)
 
@@ -805,6 +804,7 @@ if st.button("🚀 Run Analysis"):
             # SUMMARIZATION - DL MODEL
             # =====================
             elif task == "Summarization" and model_choice == "DL Model":
+                encoder_model, decoder_model, summ_tokenizer, summ_config = load_summarizer()
 
                 summary = generate_summary(input_text)
 
@@ -830,6 +830,7 @@ if st.button("🚀 Run Analysis"):
             # SUMMARIZATION - TRANSFORMER
             # =====================
             elif task == "Summarization" and model_choice == "Pretrained Transformer Model":
+                pt_tokenizer, pt_model = load_transformer_summarizer()
 
                 summary = generate_transformer_summary(input_text)
 
