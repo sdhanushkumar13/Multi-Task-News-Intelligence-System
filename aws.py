@@ -595,6 +595,7 @@ if st.button("🚀 Run Analysis"):
                     error=False
                 )
                 result_generated = True
+                st.stop()
 
             # =====================
             # CLASSIFICATION DL MODEL
@@ -626,6 +627,7 @@ if st.button("🚀 Run Analysis"):
                     error=False
                 )
                 result_generated = True
+                st.stop()
 
             # =====================
             # CLASSIFICATION TRANSFORMER MODEL
@@ -668,6 +670,7 @@ if st.button("🚀 Run Analysis"):
                     error=False
                 )
                 result_generated = True
+                st.stop()
 
             # =====================
             # NER - DL MODEL
@@ -721,6 +724,7 @@ if st.button("🚀 Run Analysis"):
                     error=False
                 )
                 result_generated = True
+                st.stop()
 
             # =====================
             # NER - TRANSFORMER MODEL
@@ -787,6 +791,7 @@ if st.button("🚀 Run Analysis"):
                     error=False
                 )
                 result_generated = True
+                st.stop()
 
             # =====================
             # SUMMARIZATION - EXTRACTIVE
@@ -810,6 +815,7 @@ if st.button("🚀 Run Analysis"):
                     error=False
                 )
                 result_generated = True
+                st.stop()
 
             # =====================
             # SUMMARIZATION - DL MODEL
@@ -837,6 +843,7 @@ if st.button("🚀 Run Analysis"):
                     error=False
                 )
                 result_generated = True
+                st.stop()
 
             # =====================
             # SUMMARIZATION - TRANSFORMER
@@ -861,3 +868,4 @@ if st.button("🚀 Run Analysis"):
                     error=False
                 )
                 result_generated = True
+                st.stop()
