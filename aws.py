@@ -526,25 +526,31 @@ with col2:
     if task == "Classification":
         model_choice = st.selectbox(
             "Model",
-            ["ML Model", "DL Model", "Pretrained Model"]
+            ["ML Model", "DL Model", "Pretrained Model"],
+            key="model_classification"
         )
     elif task == "NER":
         model_choice = st.selectbox(
             "Model",
-            ["DL Model", "Pretrained Model"]
+            ["DL Model", "Pretrained Model"],
+            key="model_ner"
         )
     elif task == "Summarization":
         model_choice = st.selectbox(
             "Model",
-            ["Extractive Baseline", "DL Model", "Pretrained Transformer Model"]
+            ["Extractive Baseline", "DL Model", "Pretrained Transformer Model"],
+            key="model_summarization"
         )
 
 st.markdown("---")
-
+result_container = st.container()
 # -------------------------------
 # RUN
 # -------------------------------
 if st.button("🚀 Run Analysis"):
+
+    with result_container:
+        st.empty()
 
     if not input_text.strip():
         st.warning("⚠️ Please enter text.")
