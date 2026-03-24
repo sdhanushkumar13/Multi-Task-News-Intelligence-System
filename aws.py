@@ -50,7 +50,7 @@ def log_to_db(user_id, task, model_family, model_name, input_length, output, err
         user=DB_USER,
         password=DB_PASSWORD,
         port=5432,
-        connection_timeout=10)
+        connect_timeout=10)
         print("Connected")   
         cur = conn.cursor()
         print(f" user:{user_id}, task:{task_type}, modelfam:{model_family}, modelname:{model_name}, inputlength:{input_length}, out:{output}, errorflag:{error_flag} ")
