@@ -5,7 +5,7 @@ from datetime import datetime
 DB_HOST = "nlp-db.cx6w4cqw67ox.ap-south-1.rds.amazonaws.com"
 DB_NAME = "nlp_logs"
 DB_USER = "postgres"
-DB_PASSWORD = "Dk23awsrds"
+DB_PASSWORD = "xxxxxxxxx"
 
 print("Connecting...")
 
