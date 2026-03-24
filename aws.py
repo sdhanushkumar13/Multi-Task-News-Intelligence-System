@@ -863,5 +863,3 @@ if st.button("🚀 Run Analysis"):
                     error=False
                 )
                 result_generated = True
-
-        st.rerun()
