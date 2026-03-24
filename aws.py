@@ -6,7 +6,6 @@ import numpy as np
 import os
 import re
 import string
-import nltk
 import torch
 import json
 import networkx as nx
@@ -24,6 +23,8 @@ import tensorflow as tf
 from tensorflow.keras.layers import Input, Embedding, LSTM, Dense, AdditiveAttention, Concatenate
 from tensorflow.keras.models import Model
 import boto3
+import nltk
+from nltk.corpus import stopwords
 #AutoModelForSequenceClassification
 
 os.environ["TMPDIR"] = "/home/ec2-user/tmp"
@@ -196,13 +197,30 @@ for path in required_dirs:
 
 # -------------------------------
 # SETUP
-# -------------------------------
-try:
-    STOPWORDS = set(stopwords.words('english'))
-except:
-    nltk.download('stopwords')
-    STOPWORDS = set(stopwords.words('english'))
-    nltk.download('punkt_tab')
+# ------------------------------
+#try:
+#    STOPWORDS = set(stopwords.words('english'))
+#except:
+#    nltk.download('stopwords')
+#    STOPWORDS = set(stopwords.words('english'))
+#    nltk.download('punkt_tab')
+#    nltk.download('punkt')
+
+# Ensure NLTK data path (important on EC2)
+nltk.data.path.append('/home/ec2-user/nltk_data')
+
+def ensure_nltk_resource(resource):
+    try:
+        nltk.data.find(resource)
+    except LookupError:
+        nltk.download(resource.split('/')[-1], download_dir='/home/ec2-user/nltk_data')
+
+# Check required resources
+ensure_nltk_resource('corpora/stopwords')
+ensure_nltk_resource('tokenizers/punkt')
+
+# Load stopwords safely
+STOPWORDS = set(stopwords.words('english'))
 
 NER_MAX_LEN = 60
 
