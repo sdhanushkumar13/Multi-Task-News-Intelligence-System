@@ -15,7 +15,7 @@ from nltk.tokenize import sent_tokenize
 from nltk.corpus import stopwords
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
-from transformers import AutoModelForSequenceClassification, AutoTokenizer, AutoModelForSeq2SeqLM
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 import torch.nn as nn
 from torchcrf import CRF
 from transformers import BertTokenizerFast, BertForSequenceClassification, BertForTokenClassification
@@ -24,6 +24,7 @@ from tensorflow.keras.layers import Input, Embedding, LSTM, Dense, AdditiveAtten
 from tensorflow.keras.models import Model
 import psycopg2
 import boto3
+#AutoModelForSequenceClassification
 
 os.environ["TMPDIR"] = "/home/ec2-user/tmp"
 os.environ["TEMP"] = "/home/ec2-user/tmp"
@@ -195,20 +196,16 @@ for path in required_dirs:
 # -------------------------------
 # SETUP
 # -------------------------------
-try:
-    STOPWORDS = set(stopwords.words('english'))
-except:
-    nltk.download('stopwords')
-    STOPWORDS = set(stopwords.words('english'))
+#try:
+ #   STOPWORDS = set(stopwords.words('english'))
+#except:
+nltk.download('stopwords')
+STOPWORDS = set(stopwords.words('english'))
 
 NER_MAX_LEN = 60
 
 MAX_LEN = 150
 PT_MAX_LEN = 96
-
-
-import re
-import string
 
 def clean_text(text):
     if not isinstance(text, str):
